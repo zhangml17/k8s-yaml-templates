@@ -1,0 +1,57 @@
+kind: Deployment 
+apiVersion: extensions/v1beta1
+metadata:
+  namespace: {{.namespace}} 
+  name: {{.name}} 
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: {{.name}}
+    spec:
+      containers:
+        - name: {{.name}}
+          image: {{.image}}
+          imagePullPolicy: {{.iamge.pull.policy}} 
+          env:
+            - name: ENV_1
+              value: "1"
+            - name: ENV_2
+              value: "2"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: {{.env.name}} 
+              valueFrom:
+                configMapKeyRef:
+                  name: {{.configmap.name}}
+                  key: {{.configmap.key}}
+          ports:
+            - containerPort: {{.port.1}}
+            - containerPort: {{.port.2}}
+          volumeMounts:
+            - name: host-time
+              mountPath: /etc/localtime
+              readOnly: true
+            - name: {{.claim}}
+              mountPath: {{.mount.path}}
+            - name: {{.config.name}} 
+              mountPath: {{.mount.path}}
+              readOnly: true
+              #subPath: {{.config.file}}
+      volumes:
+        - name: host-time
+          hostPath:
+            path: /etc/localtime
+        - name: {{.claim}}
+          persistentVolumeClaim:
+            claimName: {{.claim.name}}
+        - name: {{.config.name}} 
+          configMap:
+            name: {{.configmap.name}}
